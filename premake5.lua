@@ -23,6 +23,8 @@ project "entt"
         "**.c",
     }
 
+    excludes { "tests/**.hpp", "tests/**.cpp", "tests/**.h" }
+
     includedirs {
         "",
         "single_include",
