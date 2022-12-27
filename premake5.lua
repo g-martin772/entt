@@ -16,11 +16,11 @@ project "entt"
     objdir ("int/" .. outputdir .. "/%{prj.name}")
 
     files {
-        "src/**.h",
-        "src/**.cpp",
-        "src/**.hpp",
-        "src/**.inl",
-        "src/**.c",
+        "**.h",
+        "**.cpp",
+        "**.hpp",
+        "**.inl",
+        "**.c",
     }
 
     includedirs {
