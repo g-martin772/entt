@@ -24,7 +24,8 @@ project "entt"
     }
 
     includedirs {
-        ""
+        "",
+        "single_include",
     }
 
     filter "system:windows"
