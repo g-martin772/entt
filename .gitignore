@@ -2,10 +2,14 @@
 conan/test_package/build
 
 # IDEs
+bin/
+int/
 *.user
 .idea
 .vscode
 .vs
+*.vcxproj
+*.filters
 CMakeSettings.json
 cpp.hint
 
