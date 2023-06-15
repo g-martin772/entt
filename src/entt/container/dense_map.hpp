@@ -266,7 +266,7 @@ class dense_map {
     static constexpr std::size_t minimum_capacity = 8u;
 
     using node_type = internal::dense_map_node<Key, Type>;
-    using alloc_traits = typename std::allocator_traits<Allocator>;
+    using alloc_traits = std::allocator_traits<Allocator>;
     static_assert(std::is_same_v<typename alloc_traits::value_type, std::pair<const Key, Type>>, "Invalid value type");
     using sparse_container_type = std::vector<std::size_t, typename alloc_traits::template rebind_alloc<std::size_t>>;
     using packed_container_type = std::vector<node_type, typename alloc_traits::template rebind_alloc<node_type>>;
@@ -464,7 +464,6 @@ public:
     /**
      * @brief Returns an iterator to the beginning.
      *
-     * The returned iterator points to the first instance of the internal array.
      * If the array is empty, the returned iterator will be equal to `end()`.
      *
      * @return An iterator to the first instance of the internal array.
@@ -485,11 +484,6 @@ public:
 
     /**
      * @brief Returns an iterator to the end.
-     *
-     * The returned iterator points to the element following the last instance
-     * of the internal array. Attempting to dereference the returned iterator
-     * results in undefined behavior.
-     *
      * @return An iterator to the element following the last instance of the
      * internal array.
      */

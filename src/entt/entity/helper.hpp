@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <utility>
 #include "../core/fwd.hpp"
 #include "../core/type_traits.hpp"
 #include "../signal/delegate.hpp"
@@ -27,7 +28,7 @@ public:
     /*! @brief Type of registry to convert. */
     using registry_type = Registry;
     /*! @brief Underlying entity identifier. */
-    using entity_type = std::remove_const_t<typename registry_type::entity_type>;
+    using entity_type = typename registry_type::entity_type;
 
     /**
      * @brief Constructs a converter for a given registry.
@@ -70,7 +71,7 @@ public:
     /*! @brief Type of registry to convert. */
     using registry_type = Registry;
     /*! @brief Underlying entity identifier. */
-    using entity_type = std::remove_const_t<typename registry_type::entity_type>;
+    using entity_type = typename registry_type::entity_type;
 
     /**
      * @brief Constructs a converter for a given registry.
@@ -125,14 +126,15 @@ void invoke(Registry &reg, const typename Registry::entity_type entt) {
  */
 template<typename Registry, typename Component>
 typename Registry::entity_type to_entity(const Registry &reg, const Component &instance) {
-    const auto &storage = reg.template storage<Component>();
-    constexpr auto page_size = std::remove_const_t<std::remove_reference_t<decltype(storage)>>::traits_type::page_size;
-    const typename Registry::base_type &base = storage;
-    const auto *addr = std::addressof(instance);
+    if(const auto *storage = reg.template storage<Component>(); storage) {
+        constexpr auto page_size = std::remove_const_t<std::remove_pointer_t<decltype(storage)>>::traits_type::page_size;
+        const typename Registry::common_type &base = *storage;
+        const auto *addr = std::addressof(instance);
 
-    for(auto it = base.rbegin(), last = base.rend(); it < last; it += page_size) {
-        if(const auto dist = (addr - std::addressof(storage.get(*it))); dist >= 0 && dist < static_cast<decltype(dist)>(page_size)) {
-            return *(it + dist);
+        for(auto it = base.rbegin(), last = base.rend(); it < last; it += page_size) {
+            if(const auto dist = (addr - std::addressof(storage->get(*it))); dist >= 0 && dist < static_cast<decltype(dist)>(page_size)) {
+                return *(it + dist);
+            }
         }
     }
 
@@ -162,11 +164,12 @@ struct sigh_helper<Registry> {
     /**
      * @brief Binds a properly initialized helper to a given signal type.
      * @tparam Type Type of signal to bind the helper to.
+     * @param id Optional name for the underlying storage to use.
      * @return A helper for a given registry and signal type.
      */
     template<typename Type>
-    auto with() noexcept {
-        return sigh_helper<registry_type, Type>{*bucket};
+    auto with(const id_type id = type_hash<Type>::value()) noexcept {
+        return sigh_helper<registry_type, Type>{*bucket, id};
     }
 
     /**
@@ -188,10 +191,20 @@ private:
  */
 template<typename Registry, typename Type>
 struct sigh_helper<Registry, Type> final: sigh_helper<Registry> {
-    using sigh_helper<Registry>::sigh_helper;
+    /*! @brief Registry type. */
+    using registry_type = Registry;
 
     /**
-     * @brief Forwards the call to `on_construct` on the underlying registry.
+     * @brief Constructs a helper for a given registry.
+     * @param ref A valid reference to a registry.
+     * @param id Optional name for the underlying storage to use.
+     */
+    sigh_helper(registry_type &ref, const id_type id = type_hash<Type>::value())
+        : sigh_helper<Registry>{ref},
+          name{id} {}
+
+    /**
+     * @brief Forwards the call to `on_construct` on the underlying storage.
      * @tparam Candidate Function or member to connect.
      * @tparam Args Type of class or type of payload, if any.
      * @param args A valid object that fits the purpose, if any.
@@ -199,12 +212,12 @@ struct sigh_helper<Registry, Type> final: sigh_helper<Registry> {
      */
     template<auto Candidate, typename... Args>
     auto on_construct(Args &&...args) {
-        this->registry().template on_construct<Type>().template connect<Candidate>(std::forward<Args>(args)...);
+        this->registry().template on_construct<Type>(name).template connect<Candidate>(std::forward<Args>(args)...);
         return *this;
     }
 
     /**
-     * @brief Forwards the call to `on_update` on the underlying registry.
+     * @brief Forwards the call to `on_update` on the underlying storage.
      * @tparam Candidate Function or member to connect.
      * @tparam Args Type of class or type of payload, if any.
      * @param args A valid object that fits the purpose, if any.
@@ -212,12 +225,12 @@ struct sigh_helper<Registry, Type> final: sigh_helper<Registry> {
      */
     template<auto Candidate, typename... Args>
     auto on_update(Args &&...args) {
-        this->registry().template on_update<Type>().template connect<Candidate>(std::forward<Args>(args)...);
+        this->registry().template on_update<Type>(name).template connect<Candidate>(std::forward<Args>(args)...);
         return *this;
     }
 
     /**
-     * @brief Forwards the call to `on_destroy` on the underlying registry.
+     * @brief Forwards the call to `on_destroy` on the underlying storage.
      * @tparam Candidate Function or member to connect.
      * @tparam Args Type of class or type of payload, if any.
      * @param args A valid object that fits the purpose, if any.
@@ -225,9 +238,12 @@ struct sigh_helper<Registry, Type> final: sigh_helper<Registry> {
      */
     template<auto Candidate, typename... Args>
     auto on_destroy(Args &&...args) {
-        this->registry().template on_destroy<Type>().template connect<Candidate>(std::forward<Args>(args)...);
+        this->registry().template on_destroy<Type>(name).template connect<Candidate>(std::forward<Args>(args)...);
         return *this;
     }
+
+private:
+    id_type name;
 };
 
 /**

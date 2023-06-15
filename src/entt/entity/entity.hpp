@@ -114,7 +114,17 @@ public:
      * @return The integral representation of the version part.
      */
     [[nodiscard]] static constexpr version_type to_version(const value_type value) noexcept {
-        return (to_integral(value) >> length);
+        return static_cast<version_type>(to_integral(value) >> length);
+    }
+
+    /**
+     * @brief Returns the successor of a given identifier.
+     * @param value The identifier of which to return the successor.
+     * @return The successor of the given identifier.
+     */
+    [[nodiscard]] static constexpr value_type next(const value_type value) noexcept {
+        const auto vers = to_version(value) + 1;
+        return construct(to_entity(value), static_cast<version_type>(vers + (vers == version_mask)));
     }
 
     /**

@@ -59,7 +59,7 @@ class basic_any {
     };
 
     template<typename Type>
-    static constexpr bool in_situ = Len && alignof(Type) <= Align && sizeof(Type) <= Len &&std::is_nothrow_move_constructible_v<Type>;
+    static constexpr bool in_situ = Len && alignof(Type) <= Align && sizeof(Type) <= Len && std::is_nothrow_move_constructible_v<Type>;
 
     template<typename Type>
     static const void *basic_vtable(const operation op, const basic_any &value, const void *other) {
@@ -128,17 +128,17 @@ class basic_any {
             vtable = basic_vtable<std::remove_cv_t<std::remove_reference_t<Type>>>;
 
             if constexpr(std::is_lvalue_reference_v<Type>) {
-                static_assert(sizeof...(Args) == 1u && (std::is_lvalue_reference_v<Args> && ...), "Invalid arguments");
+                static_assert((std::is_lvalue_reference_v<Args> && ...) && (sizeof...(Args) == 1u), "Invalid arguments");
                 mode = std::is_const_v<std::remove_reference_t<Type>> ? policy::cref : policy::ref;
                 instance = (std::addressof(args), ...);
             } else if constexpr(in_situ<std::remove_cv_t<std::remove_reference_t<Type>>>) {
-                if constexpr(sizeof...(Args) != 0u && std::is_aggregate_v<std::remove_cv_t<std::remove_reference_t<Type>>>) {
+                if constexpr(std::is_aggregate_v<std::remove_cv_t<std::remove_reference_t<Type>>> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<std::remove_cv_t<std::remove_reference_t<Type>>>)) {
                     new(&storage) std::remove_cv_t<std::remove_reference_t<Type>>{std::forward<Args>(args)...};
                 } else {
                     new(&storage) std::remove_cv_t<std::remove_reference_t<Type>>(std::forward<Args>(args)...);
                 }
             } else {
-                if constexpr(sizeof...(Args) != 0u && std::is_aggregate_v<std::remove_cv_t<std::remove_reference_t<Type>>>) {
+                if constexpr(std::is_aggregate_v<std::remove_cv_t<std::remove_reference_t<Type>>> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<std::remove_cv_t<std::remove_reference_t<Type>>>)) {
                     instance = new std::remove_cv_t<std::remove_reference_t<Type>>{std::forward<Args>(args)...};
                 } else {
                     instance = new std::remove_cv_t<std::remove_reference_t<Type>>(std::forward<Args>(args)...);

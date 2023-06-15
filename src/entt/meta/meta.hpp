@@ -722,6 +722,16 @@ struct meta_handle {
         return static_cast<bool>(any);
     }
 
+    /*! @copydoc meta_any::operator== */
+    [[nodiscard]] bool operator==(const meta_handle &other) const noexcept {
+        return (any == other.any);
+    }
+
+    /*! @copydoc meta_any::operator!= */
+    [[nodiscard]] bool operator!=(const meta_handle &other) const noexcept {
+        return !(*this == other);
+    }
+
     /**
      * @brief Access operator for accessing the contained opaque object.
      * @return A wrapper that shares a reference to an unmanaged object.
@@ -756,11 +766,19 @@ struct meta_prop {
           ctx{&area} {}
 
     /**
-     * @brief Returns the stored value by copy.
+     * @brief Returns the stored value by const reference.
      * @return A wrapper containing the value stored with the property.
      */
     [[nodiscard]] meta_any value() const {
         return node->value ? node->type(internal::meta_context::from(*ctx)).from_void(*ctx, nullptr, node->value.get()) : meta_any{meta_ctx_arg, *ctx};
+    }
+
+    /**
+     * @brief Returns the stored value by reference.
+     * @return A wrapper containing the value stored with the property.
+     */
+    [[nodiscard]] meta_any value() {
+        return node->value ? node->type(internal::meta_context::from(*ctx)).from_void(*ctx, node->value.get(), nullptr) : meta_any{meta_ctx_arg, *ctx};
     }
 
     /**
@@ -771,10 +789,29 @@ struct meta_prop {
         return (node != nullptr);
     }
 
+    /**
+     * @brief Checks if two objects refer to the same type.
+     * @param other The object with which to compare.
+     * @return True if the objects refer to the same type, false otherwise.
+     */
+    [[nodiscard]] bool operator==(const meta_prop &other) const noexcept {
+        return (ctx == other.ctx && node == other.node);
+    }
+
 private:
     const internal::meta_prop_node *node;
     const meta_ctx *ctx;
 };
+
+/**
+ * @brief Checks if two objects refer to the same type.
+ * @param lhs An object, either valid or not.
+ * @param rhs An object, either valid or not.
+ * @return False if the objects refer to the same node, true otherwise.
+ */
+[[nodiscard]] inline bool operator!=(const meta_prop &lhs, const meta_prop &rhs) noexcept {
+    return !(lhs == rhs);
+}
 
 /*! @brief Opaque wrapper for data members. */
 struct meta_data {
@@ -876,10 +913,25 @@ struct meta_data {
         return (node != nullptr);
     }
 
+    /*! @copydoc meta_prop::operator== */
+    [[nodiscard]] bool operator==(const meta_data &other) const noexcept {
+        return (ctx == other.ctx && node == other.node);
+    }
+
 private:
     const internal::meta_data_node *node;
     const meta_ctx *ctx;
 };
+
+/**
+ * @brief Checks if two objects refer to the same type.
+ * @param lhs An object, either valid or not.
+ * @param rhs An object, either valid or not.
+ * @return False if the objects refer to the same node, true otherwise.
+ */
+[[nodiscard]] inline bool operator!=(const meta_data &lhs, const meta_data &rhs) noexcept {
+    return !(lhs == rhs);
+}
 
 /*! @brief Opaque wrapper for member functions. */
 struct meta_func {
@@ -1001,10 +1053,25 @@ struct meta_func {
         return (node != nullptr);
     }
 
+    /*! @copydoc meta_prop::operator== */
+    [[nodiscard]] bool operator==(const meta_func &other) const noexcept {
+        return (ctx == other.ctx && node == other.node);
+    }
+
 private:
     const internal::meta_func_node *node;
     const meta_ctx *ctx;
 };
+
+/**
+ * @brief Checks if two objects refer to the same type.
+ * @param lhs An object, either valid or not.
+ * @param rhs An object, either valid or not.
+ * @return False if the objects refer to the same node, true otherwise.
+ */
+[[nodiscard]] inline bool operator!=(const meta_func &lhs, const meta_func &rhs) noexcept {
+    return !(lhs == rhs);
+}
 
 /*! @brief Opaque wrapper for types. */
 class meta_type {
@@ -1381,7 +1448,7 @@ public:
     meta_any invoke(const id_type id, meta_handle instance, meta_any *const args, const size_type sz) const {
         if(node.details) {
             if(auto it = node.details->func.find(id); it != node.details->func.cend()) {
-                if(const auto *candidate = lookup(args, sz, (instance->data() == nullptr), [curr = &it->second]() mutable { return curr ? std::exchange(curr, curr->next.get()) : nullptr; }); candidate) {
+                if(const auto *candidate = lookup(args, sz, instance && (instance->data() == nullptr), [curr = &it->second]() mutable { return curr ? std::exchange(curr, curr->next.get()) : nullptr; }); candidate) {
                     return candidate->invoke(*ctx, meta_handle{*ctx, std::move(instance)}, args);
                 }
             }
@@ -1478,11 +1545,7 @@ public:
         return !(ctx == nullptr);
     }
 
-    /**
-     * @brief Checks if two objects refer to the same type.
-     * @param other The object with which to compare.
-     * @return True if the objects refer to the same type, false otherwise.
-     */
+    /*! @copydoc meta_prop::operator== */
     [[nodiscard]] bool operator==(const meta_type &other) const noexcept {
         return (ctx == other.ctx) && ((!node.info && !other.node.info) || (node.info && other.node.info && *node.info == *other.node.info));
     }
@@ -1634,7 +1697,7 @@ public:
     explicit meta_iterator(const meta_ctx &area, It iter) noexcept
         : ctx{&area},
           vtable{&basic_vtable<It>},
-          handle{std::move(iter)} {}
+          handle{iter} {}
 
     meta_iterator &operator++() noexcept {
         vtable(operation::incr, handle, 1, nullptr);
@@ -1728,7 +1791,7 @@ public:
     meta_iterator(const meta_ctx &area, std::integral_constant<bool, KeyOnly>, It iter) noexcept
         : ctx{&area},
           vtable{&basic_vtable<KeyOnly, It>},
-          handle{std::move(iter)} {}
+          handle{iter} {}
 
     meta_iterator &operator++() noexcept {
         vtable(operation::incr, handle, nullptr);
@@ -1838,7 +1901,7 @@ inline meta_sequence_container::iterator meta_sequence_container::insert(iterato
  * @return A possibly invalid iterator following the last removed element.
  */
 inline meta_sequence_container::iterator meta_sequence_container::erase(iterator it) {
-    return insert(std::move(it), {});
+    return insert(it, {});
 }
 
 /**

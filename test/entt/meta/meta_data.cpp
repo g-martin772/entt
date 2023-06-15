@@ -103,9 +103,6 @@ struct MetaData: ::testing::Test {
     void SetUp() override {
         using namespace entt::literals;
 
-        entt::meta<double>()
-            .type("double"_hs);
-
         entt::meta<base_t>()
             .type("base"_hs)
             .dtor<base_t::destroy>()
@@ -167,6 +164,12 @@ TEST_F(MetaData, Functionalities) {
     clazz_t instance{};
 
     ASSERT_TRUE(data);
+
+    ASSERT_EQ(data, data);
+    ASSERT_NE(data, entt::meta_data{});
+    ASSERT_FALSE(data != data);
+    ASSERT_TRUE(data == data);
+
     ASSERT_EQ(data.arity(), 1u);
     ASSERT_EQ(data.type(), entt::resolve<int>());
     ASSERT_EQ(data.arg(0u), entt::resolve<int>());
