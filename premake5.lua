@@ -12,8 +12,8 @@ project "entt"
         "Dist"
     }
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("int/" .. outputdir .. "/%{prj.name}")
+    targetdir ("%{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}")
+    objdir ("%{wks.location}/obj/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/%{prj.name}")
 
     files {
         "**.h",
