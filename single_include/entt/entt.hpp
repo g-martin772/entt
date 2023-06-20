@@ -1,3 +1,7 @@
+// Undefine max and min macros from Windows.h ...
+#undef max
+#undef min
+
 // IWYU pragma: begin_exports
 // #include "config/config.h"
 #ifndef ENTT_CONFIG_CONFIG_H
