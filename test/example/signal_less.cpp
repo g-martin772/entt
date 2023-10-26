@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <gtest/gtest.h>
 #include <entt/entity/entity.hpp>
+#include <entt/entity/mixin.hpp>
 #include <entt/entity/registry.hpp>
 
 template<typename Type, typename Entity>
@@ -27,8 +28,8 @@ inline constexpr auto has_on_construct_v = has_on_construct<Entity, Type>::value
 
 TEST(Example, SignalLess) {
     // invoking registry::on_construct<int> is a compile-time error
-    static_assert(!has_on_construct_v<entt::entity, int>);
-    static_assert(has_on_construct_v<entt::entity, char>);
+    ASSERT_FALSE((has_on_construct_v<entt::entity, int>));
+    ASSERT_TRUE((has_on_construct_v<entt::entity, char>));
 
     entt::registry registry;
     const entt::entity entity[1u]{registry.create()};

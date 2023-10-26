@@ -4,6 +4,8 @@
 #include <entt/entity/registry.hpp>
 #include <entt/entity/storage.hpp>
 #include <entt/meta/factory.hpp>
+#include <entt/meta/meta.hpp>
+#include <entt/meta/policy.hpp>
 #include <entt/meta/resolve.hpp>
 
 enum class my_entity : entt::id_type {};
@@ -55,7 +57,7 @@ TEST(EntityCopy, SameRegistry) {
     registry.emplace<int>(src, 42);
     registry.emplace<char>(src, 'c');
 
-    ASSERT_EQ(registry.size(), 2u);
+    ASSERT_EQ(registry.storage<entt::entity>().size(), 2u);
     ASSERT_TRUE(custom.contains(src));
     ASSERT_FALSE(custom.contains(dst));
     ASSERT_TRUE((registry.all_of<int, char>(src)));
@@ -68,7 +70,7 @@ TEST(EntityCopy, SameRegistry) {
         }
     }
 
-    ASSERT_EQ(registry.size(), 2u);
+    ASSERT_EQ(registry.storage<entt::entity>().size(), 2u);
     ASSERT_TRUE(custom.contains(src));
     ASSERT_FALSE(custom.contains(dst));
     ASSERT_TRUE((registry.all_of<int, char>(src)));
@@ -91,8 +93,8 @@ TYPED_TEST(EntityCopy, CrossRegistry) {
     src.emplace<int>(entity, 42);
     src.emplace<char>(entity, 'c');
 
-    ASSERT_EQ(src.size(), 1u);
-    ASSERT_EQ(dst.size(), 1u);
+    ASSERT_EQ(src.storage<entt::entity>().size(), 1u);
+    ASSERT_EQ(dst.template storage<typename TestFixture::type::entity_type>().size(), 1u);
 
     ASSERT_TRUE((src.all_of<int, char>(entity)));
     ASSERT_FALSE((dst.template all_of<int, char>(copy)));
@@ -111,8 +113,8 @@ TYPED_TEST(EntityCopy, CrossRegistry) {
         }
     }
 
-    ASSERT_EQ(src.size(), 1u);
-    ASSERT_EQ(dst.size(), 1u);
+    ASSERT_EQ(src.storage<entt::entity>().size(), 1u);
+    ASSERT_EQ(dst.template storage<typename TestFixture::type::entity_type>().size(), 1u);
 
     ASSERT_TRUE((src.all_of<int, char>(entity)));
     ASSERT_TRUE((dst.template all_of<int, char>(copy)));

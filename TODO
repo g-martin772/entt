@@ -12,10 +12,14 @@ TODO (high prio):
 * check natvis files (periodically :)
 * resource cache: avoid using shared ptr with loader and the others
 * further optimize exclusion lists in multi type views (no existence check)
-* further improve the snapshot stuff, ie component functions
-* use fixture for storage tests to reduce loc number and duplication as much as possible
-* basic_view<...>::reach(...)
 * doc: bump entities
+* update view doc: single vs multi type views are no longer a thing actually
+* further improve meta resolve function by id (bimap)
+* make ::pack part of the sparse set interface
+* storage-based invoke helpers (update sigh mixin to also support storage based cbs)
+* make nth_argument use function types rather than pointers
+* use fixed_size_sequence_container_v to skip calls in meta.hpp, make funcs ret type void
+* ===> TEST: view (scoped begin) tests after the last changes
 
 WIP:
 * get rid of observers, storage based views made them pointless - document alternatives
