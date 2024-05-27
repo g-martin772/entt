@@ -15,11 +15,7 @@
 
 namespace entt {
 
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
+/*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
 
 template<typename>
@@ -56,8 +52,8 @@ struct unpack_type<const basic_registry<Args...>, type_list<Override...>>
 
 template<typename... Get, typename... Exclude, typename... Override>
 struct unpack_type<basic_view<get_t<Get...>, exclude_t<Exclude...>>, type_list<Override...>> {
-    using ro = type_list_cat_t<type_list<typename Exclude::value_type...>, typename unpack_type<constness_as_t<typename Get::value_type, Get>, type_list<Override...>>::ro...>;
-    using rw = type_list_cat_t<typename unpack_type<constness_as_t<typename Get::value_type, Get>, type_list<Override...>>::rw...>;
+    using ro = type_list_cat_t<type_list<typename Exclude::element_type...>, typename unpack_type<constness_as_t<typename Get::element_type, Get>, type_list<Override...>>::ro...>;
+    using rw = type_list_cat_t<typename unpack_type<constness_as_t<typename Get::element_type, Get>, type_list<Override...>>::rw...>;
 };
 
 template<typename... Get, typename... Exclude, typename... Override>
@@ -87,11 +83,7 @@ template<typename... Req, typename Ret, typename Class, typename... Args>
 resource_traits<type_list<std::remove_reference_t<Args>...>, type_list<Req...>> constrained_function_to_resource_traits(Ret (Class::*)(Args...) const);
 
 } // namespace internal
-
-/**
- * Internal details not to be documented.
- * @endcond
- */
+/*! @endcond */
 
 /**
  * @brief Utility class for creating a static task graph.

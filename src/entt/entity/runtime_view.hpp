@@ -11,16 +11,13 @@
 
 namespace entt {
 
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
+/*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
 
 template<typename Set>
 class runtime_view_iterator final {
     using iterator_type = typename Set::iterator;
+    using iterator_traits = std::iterator_traits<iterator_type>;
 
     [[nodiscard]] bool valid() const {
         return (!tombstone_check || *it != tombstone)
@@ -29,10 +26,10 @@ class runtime_view_iterator final {
     }
 
 public:
-    using difference_type = typename iterator_type::difference_type;
-    using value_type = typename iterator_type::value_type;
-    using pointer = typename iterator_type::pointer;
-    using reference = typename iterator_type::reference;
+    using value_type = typename iterator_traits::value_type;
+    using pointer = typename iterator_traits::pointer;
+    using reference = typename iterator_traits::reference;
+    using difference_type = typename iterator_traits::difference_type;
     using iterator_category = std::bidirectional_iterator_tag;
 
     constexpr runtime_view_iterator() noexcept
@@ -95,26 +92,22 @@ private:
 };
 
 } // namespace internal
-
-/**
- * Internal details not to be documented.
- * @endcond
- */
+/*! @endcond */
 
 /**
  * @brief Generic runtime view.
  *
  * Runtime views iterate over those entities that are at least in the given
  * storage. During initialization, a runtime view looks at the number of
- * entities available for each component and uses the smallest set in order to
- * get a performance boost when iterating.
+ * entities available for each element and uses the smallest set in order to get
+ * a performance boost when iterating.
  *
  * @b Important
  *
  * Iterators aren't invalidated if:
  *
  * * New elements are added to the storage.
- * * The entity currently pointed is modified (for example, components are added
+ * * The entity currently pointed is modified (for example, elements are added
  *   or removed from it).
  * * The entity currently pointed is destroyed.
  *
@@ -249,11 +242,11 @@ public:
 
     /**
      * @brief Returns an iterator to the first entity that has the given
-     * components.
+     * elements.
      *
      * If the view is empty, the returned iterator will be equal to `end()`.
      *
-     * @return An iterator to the first entity that has the given components.
+     * @return An iterator to the first entity that has the given elements.
      */
     [[nodiscard]] iterator begin() const {
         return pools.empty() ? iterator{} : iterator{pools, filter, pools[0]->begin()};
@@ -261,12 +254,20 @@ public:
 
     /**
      * @brief Returns an iterator that is past the last entity that has the
-     * given components.
+     * given elements.
      * @return An iterator to the entity following the last entity that has the
-     * given components.
+     * given elements.
      */
     [[nodiscard]] iterator end() const {
         return pools.empty() ? iterator{} : iterator{pools, filter, pools[0]->end()};
+    }
+
+    /**
+     * @brief Checks whether a view is initialized or not.
+     * @return True if the view is initialized, false otherwise.
+     */
+    [[nodiscard]] explicit operator bool() const noexcept {
+        return !(pools.empty() && filter.empty());
     }
 
     /**

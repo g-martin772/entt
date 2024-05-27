@@ -6,11 +6,11 @@
 [![Build Status](https://github.com/skypjack/entt/workflows/build/badge.svg)](https://github.com/skypjack/entt/actions)
 [![Coverage](https://codecov.io/gh/skypjack/entt/branch/master/graph/badge.svg)](https://codecov.io/gh/skypjack/entt)
 [![Try online](https://img.shields.io/badge/try-online-brightgreen)](https://godbolt.org/z/zxW73f)
-[![Vcpkg port](https://img.shields.io/vcpkg/v/entt)](https://vcpkg.link/ports/entt)
 [![Documentation](https://img.shields.io/badge/docs-doxygen-blue)](https://skypjack.github.io/entt/)
+[![Vcpkg port](https://img.shields.io/vcpkg/v/entt)](https://vcpkg.link/ports/entt)
+[![Conan Center](https://img.shields.io/conan/v/entt)](https://conan.io/center/recipes/entt)
 [![Gitter chat](https://badges.gitter.im/skypjack/entt.png)](https://gitter.im/skypjack/entt)
 [![Discord channel](https://img.shields.io/discord/707607951396962417?logo=discord)](https://discord.gg/5BjPWBd)
-[![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/skypjack)
 
 > `EnTT` has been a dream so far, we haven't found a single bug to date and it's
 > super easy to work with
@@ -39,7 +39,8 @@ Don't forget to check the
 there.
 
 Do you want to support `EnTT`? Consider becoming a
-[**sponsor**](https://github.com/users/skypjack/sponsorship).
+[**sponsor**](https://github.com/users/skypjack/sponsorship) or making a
+donation via [**PayPal**](https://www.paypal.me/skypjack).<br/>
 Many thanks to [these people](https://skypjack.github.io/sponsorship/) and
 **special** thanks to:
 
@@ -51,7 +52,7 @@ Many thanks to [these people](https://skypjack.github.io/sponsorship/) and
 * [Introduction](#introduction)
   * [Code Example](#code-example)
   * [Motivation](#motivation)
-  * [Performance](#performance)
+  * [Benchmark](#benchmark)
 * [Integration](#integration)
   * [Requirements](#requirements)
   * [CMake](#cmake)
@@ -175,37 +176,28 @@ Nowadays, `EnTT` is finally what I was looking for: still faster than its
 _competitors_, lower memory usage in the average case, a really good API and an
 amazing set of features. And even more, of course.
 
-## Performance
+## Benchmark
 
-The proposed entity-component system is incredibly fast to iterate entities and
-components, this is a fact. Some compilers make a lot of optimizations because
-of how `EnTT` works, some others aren't that good. In general, if we consider
-real world cases, `EnTT` is somewhere between a bit and much faster than many of
-the other solutions around, although I couldn't check them all for obvious
-reasons.
+For what it's worth, you'll **never** see me trying to make other projects look
+bad or offer dubious comparisons just to make this library seem cooler.<br/>
+I leave this activity to others, if they enjoy it (and it seems that some people
+actually like it). I prefer to make better use of my time.
 
 If you are interested, you can compile the `benchmark` test in release mode (to
 enable compiler optimizations, otherwise it would make little sense) by setting
 the `ENTT_BUILD_BENCHMARK` option of `CMake` to `ON`, then evaluate yourself
 whether you're satisfied with the results or not.
 
-Honestly I got tired of updating the README file whenever there is an
-improvement.<br/>
-There are already a lot of projects out there that use `EnTT` as a basis for
+There are also a lot of projects out there that use `EnTT` as a basis for
 comparison (this should already tell you a lot). Many of these benchmarks are
 completely wrong, many others are simply incomplete, good at omitting some
 information and using the wrong function to compare a given feature. Certainly
 there are also good ones but they age quickly if nobody updates them, especially
-when the library they are dealing with is actively developed.
-
-The choice to use `EnTT` should be based on its carefully designed API, its
-set of features and the general performance, **not** because some single
-benchmark shows it to be the fastest tool available.
-
-In the future I'll likely try to get even better performance while still adding
-new features, mainly for fun.<br/>
-If you want to contribute and/or have suggestions, feel free to make a PR or
-open an issue to discuss your idea.
+when the library they are dealing with is actively developed.<br/>
+Out of all of them, [this](https://github.com/abeimler/ecs_benchmark) seems like
+the most up-to-date project and also covers a certain number of libraries. I
+can't say exactly whether `EnTT` is used correctly or not. However, even if used
+poorly, it should still give the reader an idea of where it's going to operate.
 
 # Integration
 
@@ -429,7 +421,7 @@ know who has participated so far.
 
 # License
 
-Code and documentation Copyright (c) 2017-2023 Michele Caini.<br/>
+Code and documentation Copyright (c) 2017-2024 Michele Caini.<br/>
 Colorful logo Copyright (c) 2018-2021 Richard Caseres.
 
 Code released under

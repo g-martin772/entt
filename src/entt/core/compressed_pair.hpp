@@ -5,15 +5,12 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include "fwd.hpp"
 #include "type_traits.hpp"
 
 namespace entt {
 
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
+/*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
 
 template<typename Type, std::size_t, typename = void>
@@ -73,11 +70,7 @@ struct compressed_pair_element<Type, Tag, std::enable_if_t<is_ebco_eligible_v<Ty
 };
 
 } // namespace internal
-
-/**
- * Internal details not to be documented.
- * @endcond
- */
+/*! @endcond */
 
 /**
  * @brief A compressed pair.

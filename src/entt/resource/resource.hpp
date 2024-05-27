@@ -37,8 +37,8 @@ public:
         : value{} {}
 
     /**
-     * @brief Creates a handle from a weak pointer, namely a resource.
-     * @param res A weak pointer to a resource.
+     * @brief Creates a new resource handle.
+     * @param res A handle to a resource.
      */
     explicit resource(handle_type res) noexcept
         : value{std::move(res)} {}
@@ -146,6 +146,19 @@ public:
      */
     [[nodiscard]] explicit operator bool() const noexcept {
         return static_cast<bool>(value);
+    }
+
+    /*! @brief Releases the ownership of the managed resource. */
+    void reset() {
+        value.reset();
+    }
+
+    /**
+     * @brief Replaces the managed resource.
+     * @param other A handle to a resource.
+     */
+    void reset(handle_type other) {
+        value = std::move(other);
     }
 
     /**

@@ -1,13 +1,13 @@
-#include <iterator>
+#include <array>
 #include <type_traits>
 #include <gtest/gtest.h>
-#include <entt/entity/entity.hpp>
 #include <entt/entity/mixin.hpp>
 #include <entt/entity/registry.hpp>
+#include <entt/entity/storage.hpp>
 
 template<typename Type, typename Entity>
 struct entt::storage_type<Type, Entity> {
-    // no signal regardless of component type ...
+    // no signal regardless of element type ...
     using type = basic_storage<Type, Entity>;
 };
 
@@ -32,13 +32,13 @@ TEST(Example, SignalLess) {
     ASSERT_TRUE((has_on_construct_v<entt::entity, char>));
 
     entt::registry registry;
-    const entt::entity entity[1u]{registry.create()};
+    const std::array entity{registry.create()};
 
     // literally a test for storage_adapter_mixin
     registry.emplace<int>(entity[0], 0);
     registry.erase<int>(entity[0]);
-    registry.insert<int>(std::begin(entity), std::end(entity), 3);
-    registry.patch<int>(entity[0], [](auto &value) { value = 42; });
+    registry.insert<int>(entity.begin(), entity.end(), 3);
+    registry.patch<int>(entity[0], [](auto &value) { value = 2; });
 
-    ASSERT_EQ(registry.get<int>(entity[0]), 42);
+    ASSERT_EQ(registry.get<int>(entity[0]), 2);
 }

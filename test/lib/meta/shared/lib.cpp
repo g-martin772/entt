@@ -4,35 +4,35 @@
 #include <entt/meta/context.hpp>
 #include <entt/meta/factory.hpp>
 #include <entt/meta/meta.hpp>
-#include "../common/types.h"
+#include "../../../common/boxed_type.h"
+#include "../../../common/empty.h"
 
-position create_position(int x, int y) {
-    return position{x, y};
+test::boxed_int create_boxed_int(int value) {
+    return test::boxed_int{value};
 }
 
-ENTT_API void share(entt::locator<entt::meta_ctx>::node_type handle) {
+ENTT_API void share(const entt::locator<entt::meta_ctx>::node_type &handle) {
     entt::locator<entt::meta_ctx>::reset(handle);
 }
 
 ENTT_API void set_up() {
     using namespace entt::literals;
 
-    entt::meta<position>()
-        .type("position"_hs)
-        .ctor<&create_position>()
-        .data<&position::x>("x"_hs)
-        .data<&position::y>("y"_hs);
+    entt::meta<test::boxed_int>()
+        .type("boxed_int"_hs)
+        .ctor<&create_boxed_int>()
+        .data<&test::boxed_int::value>("value"_hs);
 
-    entt::meta<velocity>()
-        .type("velocity"_hs)
-        .ctor<>()
-        .data<&velocity::dx>("dx"_hs)
-        .data<&velocity::dy>("dy"_hs);
+    entt::meta<test::empty>()
+        .type("empty"_hs)
+        .ctor<>();
+
+    static_cast<void>(entt::meta<double>());
 }
 
 ENTT_API void tear_down() {
-    entt::meta_reset<position>();
-    entt::meta_reset<velocity>();
+    entt::meta_reset<test::boxed_int>();
+    entt::meta_reset<test::empty>();
 }
 
 ENTT_API entt::meta_any wrap_int(int value) {

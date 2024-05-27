@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
+#include <entt/core/hashed_string.hpp>
 #include <entt/entity/component.hpp>
 #include <entt/entity/entity.hpp>
 #include <entt/entity/helper.hpp>
 #include <entt/entity/registry.hpp>
+#include "../../common/pointer_stable.h"
 
 struct clazz {
     void func(entt::registry &, entt::entity curr) {
@@ -16,11 +18,6 @@ void sigh_callback(int &value) {
     ++value;
 }
 
-struct pointer_stable {
-    static constexpr auto in_place_delete = true;
-    int value{};
-};
-
 template<typename Type>
 struct ToEntity: testing::Test {
     using type = Type;
@@ -29,7 +26,7 @@ struct ToEntity: testing::Test {
 template<typename Type>
 using ToEntityDeprecated = ToEntity<Type>;
 
-using ToEntityTypes = ::testing::Types<int, pointer_stable>;
+using ToEntityTypes = ::testing::Types<int, test::pointer_stable>;
 
 TYPED_TEST_SUITE(ToEntity, ToEntityTypes, );
 TYPED_TEST_SUITE(ToEntityDeprecated, ToEntityTypes, );
@@ -69,84 +66,41 @@ TYPED_TEST(ToEntity, Functionalities) {
 
     entt::registry registry;
     const entt::entity null = entt::null;
+
     auto &storage = registry.storage<value_type>();
-    constexpr auto page_size = entt::storage_type_t<value_type>::traits_type::page_size;
-    const value_type value{42};
+    const value_type value{4};
 
-    ASSERT_EQ(entt::to_entity(storage, value_type{42}), null);
     ASSERT_EQ(entt::to_entity(storage, value), null);
 
     const auto entity = registry.create();
     storage.emplace(entity);
 
-    while(storage.size() < (page_size - (1u + traits_type::in_place_delete))) {
+    while(storage.size() < (traits_type::page_size - (1u + traits_type::in_place_delete))) {
         storage.emplace(registry.create(), value);
     }
 
     const auto other = registry.create();
     const auto next = registry.create();
 
-    registry.emplace<value_type>(other);
-    registry.emplace<value_type>(next);
+    storage.emplace(other);
+    storage.emplace(next);
 
-    ASSERT_EQ(entt::to_entity(storage, registry.get<value_type>(entity)), entity);
-    ASSERT_EQ(entt::to_entity(storage, registry.get<value_type>(other)), other);
-    ASSERT_EQ(entt::to_entity(storage, registry.get<value_type>(next)), next);
+    ASSERT_EQ(entt::to_entity(storage, storage.get(entity)), entity);
+    ASSERT_EQ(entt::to_entity(storage, storage.get(other)), other);
+    ASSERT_EQ(entt::to_entity(storage, storage.get(next)), next);
 
-    ASSERT_EQ(&registry.get<value_type>(entity) + page_size - (1u + traits_type::in_place_delete), &registry.get<value_type>(other));
+    ASSERT_EQ(*storage.entt::sparse_set::rbegin(), entity);
+    ASSERT_EQ(&*(storage.rbegin() + traits_type::page_size - (1u + traits_type::in_place_delete)), &storage.get(other));
 
     registry.destroy(other);
 
-    ASSERT_EQ(entt::to_entity(storage, registry.get<value_type>(entity)), entity);
-    ASSERT_EQ(entt::to_entity(storage, registry.get<value_type>(next)), next);
+    ASSERT_EQ(entt::to_entity(storage, storage.get(entity)), entity);
+    ASSERT_EQ(entt::to_entity(storage, storage.get(next)), next);
 
-    ASSERT_EQ(&registry.get<value_type>(entity) + page_size - 1u, &registry.get<value_type>(next));
+    ASSERT_EQ(*storage.entt::sparse_set::rbegin(), entity);
+    ASSERT_EQ(&*(storage.rbegin() + traits_type::page_size - 1u), &storage.get(next));
 
-    ASSERT_EQ(entt::to_entity(storage, value_type{42}), null);
     ASSERT_EQ(entt::to_entity(storage, value), null);
-}
-
-TYPED_TEST(ToEntityDeprecated, Functionalities) {
-    using value_type = typename TestFixture::type;
-    using traits_type = entt::component_traits<value_type>;
-
-    entt::registry registry;
-    const entt::entity null = entt::null;
-    constexpr auto page_size = entt::storage_type_t<value_type>::traits_type::page_size;
-    const value_type value{42};
-
-    ASSERT_EQ(entt::to_entity(registry, value_type{42}), null);
-    ASSERT_EQ(entt::to_entity(registry, value), null);
-
-    const auto entity = registry.create();
-    auto &&storage = registry.storage<value_type>();
-    storage.emplace(entity);
-
-    while(storage.size() < (page_size - (1u + traits_type::in_place_delete))) {
-        storage.emplace(registry.create(), value);
-    }
-
-    const auto other = registry.create();
-    const auto next = registry.create();
-
-    registry.emplace<value_type>(other);
-    registry.emplace<value_type>(next);
-
-    ASSERT_EQ(entt::to_entity(registry, registry.get<value_type>(entity)), entity);
-    ASSERT_EQ(entt::to_entity(registry, registry.get<value_type>(other)), other);
-    ASSERT_EQ(entt::to_entity(registry, registry.get<value_type>(next)), next);
-
-    ASSERT_EQ(&registry.get<value_type>(entity) + page_size - (1u + traits_type::in_place_delete), &registry.get<value_type>(other));
-
-    registry.destroy(other);
-
-    ASSERT_EQ(entt::to_entity(registry, registry.get<value_type>(entity)), entity);
-    ASSERT_EQ(entt::to_entity(registry, registry.get<value_type>(next)), next);
-
-    ASSERT_EQ(&registry.get<value_type>(entity) + page_size - 1u, &registry.get<value_type>(next));
-
-    ASSERT_EQ(entt::to_entity(registry, value_type{42}), null);
-    ASSERT_EQ(entt::to_entity(registry, value), null);
 }
 
 TEST(SighHelper, Functionalities) {

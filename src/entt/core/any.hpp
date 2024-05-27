@@ -13,11 +13,7 @@
 
 namespace entt {
 
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
+/*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
 
 enum class any_operation : std::uint8_t {
@@ -31,11 +27,7 @@ enum class any_operation : std::uint8_t {
 };
 
 } // namespace internal
-
-/**
- * Internal details not to be documented.
- * @endcond
- */
+/*! @endcond */
 
 /*! @brief Possible modes of an any object. */
 enum class any_policy : std::uint8_t {
@@ -84,7 +76,7 @@ class basic_any {
         case operation::move:
             if constexpr(in_situ<Type>) {
                 if(value.mode == any_policy::owner) {
-                    return new(&static_cast<basic_any *>(const_cast<void *>(other))->storage) Type{std::move(*const_cast<Type *>(element))};
+                    return ::new(&static_cast<basic_any *>(const_cast<void *>(other))->storage) Type{std::move(*const_cast<Type *>(element))};
                 }
             }
 
@@ -136,9 +128,9 @@ class basic_any {
                 instance = (std::addressof(args), ...);
             } else if constexpr(in_situ<std::remove_cv_t<std::remove_reference_t<Type>>>) {
                 if constexpr(std::is_aggregate_v<std::remove_cv_t<std::remove_reference_t<Type>>> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<std::remove_cv_t<std::remove_reference_t<Type>>>)) {
-                    new(&storage) std::remove_cv_t<std::remove_reference_t<Type>>{std::forward<Args>(args)...};
+                    ::new(&storage) std::remove_cv_t<std::remove_reference_t<Type>>{std::forward<Args>(args)...};
                 } else {
-                    new(&storage) std::remove_cv_t<std::remove_reference_t<Type>>(std::forward<Args>(args)...);
+                    ::new(&storage) std::remove_cv_t<std::remove_reference_t<Type>>(std::forward<Args>(args)...);
                 }
             } else {
                 if constexpr(std::is_aggregate_v<std::remove_cv_t<std::remove_reference_t<Type>>> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<std::remove_cv_t<std::remove_reference_t<Type>>>)) {
@@ -402,14 +394,6 @@ public:
     /*! @copydoc as_ref */
     [[nodiscard]] basic_any as_ref() const noexcept {
         return basic_any{*this, any_policy::cref};
-    }
-
-    /**
-     * @brief Returns true if a wrapper owns its object, false otherwise.
-     * @return True if the wrapper owns its object, false otherwise.
-     */
-    [[deprecated("use policy() and any_policy instead")]] [[nodiscard]] bool owner() const noexcept {
-        return (mode == any_policy::owner);
     }
 
     /**

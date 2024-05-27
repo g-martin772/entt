@@ -1,19 +1,9 @@
 #include <gtest/gtest.h>
 #include <entt/config/config.h>
 #include <entt/entity/component.hpp>
-
-struct empty {};
-
-struct non_empty {
-    int value;
-};
-
-struct non_movable {
-    non_movable() = default;
-    non_movable(const non_movable &) = delete;
-    non_movable &operator=(const non_movable &) = delete;
-    int value;
-};
+#include "../../common/boxed_type.h"
+#include "../../common/empty.h"
+#include "../../common/non_movable.h"
 
 struct self_contained {
     static constexpr auto in_place_delete = true;
@@ -37,21 +27,21 @@ TEST(Component, VoidType) {
 }
 
 TEST(Component, Empty) {
-    using traits_type = entt::component_traits<empty>;
+    using traits_type = entt::component_traits<test::empty>;
 
     ASSERT_FALSE(traits_type::in_place_delete);
     ASSERT_EQ(traits_type::page_size, 0u);
 }
 
 TEST(Component, NonEmpty) {
-    using traits_type = entt::component_traits<non_empty>;
+    using traits_type = entt::component_traits<test::boxed_int>;
 
     ASSERT_FALSE(traits_type::in_place_delete);
     ASSERT_EQ(traits_type::page_size, ENTT_PACKED_PAGE);
 }
 
 TEST(Component, NonMovable) {
-    using traits_type = entt::component_traits<non_movable>;
+    using traits_type = entt::component_traits<test::non_movable>;
 
     ASSERT_TRUE(traits_type::in_place_delete);
     ASSERT_EQ(traits_type::page_size, ENTT_PACKED_PAGE);

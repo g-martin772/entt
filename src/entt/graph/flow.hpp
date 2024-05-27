@@ -134,8 +134,8 @@ public:
      */
     explicit basic_flow(const allocator_type &allocator)
         : index{0u, allocator},
-          vertices{},
-          deps{},
+          vertices{allocator},
+          deps{allocator},
           sync_on{} {}
 
     /*! @brief Default copy constructor. */
@@ -213,6 +213,14 @@ public:
         std::swap(vertices, other.vertices);
         std::swap(deps, other.deps);
         std::swap(sync_on, other.sync_on);
+    }
+
+    /**
+     * @brief Returns true if a flow builder contains no tasks, false otherwise.
+     * @return True if the flow builder contains no tasks, false otherwise.
+     */
+    [[nodiscard]] bool empty() const noexcept {
+        return vertices.empty();
     }
 
     /**

@@ -19,11 +19,7 @@
 
 namespace entt {
 
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
+/*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
 
 template<typename Type, typename It>
@@ -37,6 +33,7 @@ public:
     using reference = value_type;
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::input_iterator_tag;
+    using iterator_concept = std::random_access_iterator_tag;
 
     constexpr resource_cache_iterator() noexcept = default;
 
@@ -88,7 +85,7 @@ public:
     }
 
     [[nodiscard]] constexpr reference operator*() const noexcept {
-        return (*this)[0];
+        return operator[](0);
     }
 
     [[nodiscard]] constexpr pointer operator->() const noexcept {
@@ -144,11 +141,7 @@ template<typename... Lhs, typename... Rhs>
 }
 
 } // namespace internal
-
-/**
- * Internal details not to be documented.
- * @endcond
- */
+/*! @endcond */
 
 /**
  * @brief Basic cache for resources of any type.
@@ -164,14 +157,14 @@ class resource_cache {
     using container_type = dense_map<id_type, typename Loader::result_type, identity, std::equal_to<id_type>, container_allocator>;
 
 public:
+    /*! @brief Allocator type. */
+    using allocator_type = Allocator;
     /*! @brief Resource type. */
     using value_type = Type;
     /*! @brief Unsigned integer type. */
     using size_type = std::size_t;
     /*! @brief Loader type. */
     using loader_type = Loader;
-    /*! @brief Allocator type. */
-    using allocator_type = Allocator;
     /*! @brief Input iterator type. */
     using iterator = internal::resource_cache_iterator<Type, typename container_type::iterator>;
     /*! @brief Constant input iterator type. */

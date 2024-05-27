@@ -12,7 +12,8 @@
 namespace entt {
 
 /**
- * @brief Checks whether a value is a power of two or not.
+ * @brief Checks whether a value is a power of two or not (waiting for C++20 and
+ * `std::has_single_bit`).
  * @param value A value that may or may not be a power of two.
  * @return True if the value is a power of two, false otherwise.
  */
@@ -21,7 +22,8 @@ namespace entt {
 }
 
 /**
- * @brief Computes the smallest power of two greater than or equal to a value.
+ * @brief Computes the smallest power of two greater than or equal to a value
+ * (waiting for C++20 and `std::bit_ceil`).
  * @param value The value to use.
  * @return The smallest power of two greater than or equal to the given value.
  */
@@ -163,11 +165,7 @@ ENTT_CONSTEXPR auto allocate_unique(Allocator &allocator, Args &&...args) {
     return std::unique_ptr<Type, allocation_deleter<allocator_type>>{ptr, alloc};
 }
 
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
+/*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
 
 template<typename Type>
@@ -223,11 +221,7 @@ struct uses_allocator_construction<std::pair<Type, Other>> {
 };
 
 } // namespace internal
-
-/**
- * Internal details not to be documented.
- * @endcond
- */
+/*! @endcond */
 
 /**
  * @brief Uses-allocator construction utility (waiting for C++20).
@@ -281,7 +275,7 @@ constexpr Type make_obj_using_allocator(const Allocator &allocator, Args &&...ar
  */
 template<typename Type, typename Allocator, typename... Args>
 constexpr Type *uninitialized_construct_using_allocator(Type *value, const Allocator &allocator, Args &&...args) {
-    return std::apply([value](auto &&...curr) { return new(value) Type(std::forward<decltype(curr)>(curr)...); }, internal::uses_allocator_construction<Type>::args(allocator, std::forward<Args>(args)...));
+    return std::apply([value](auto &&...curr) { return ::new(value) Type(std::forward<decltype(curr)>(curr)...); }, internal::uses_allocator_construction<Type>::args(allocator, std::forward<Args>(args)...));
 }
 
 } // namespace entt
